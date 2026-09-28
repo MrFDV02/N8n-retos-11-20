@@ -256,4 +256,4 @@ En este taller un workflow no se considera terminado solo porque ejecuta una vez
 
 ---
 
-**Autor:** [Tu nombre] · Taller de Automatización con IA
+**Autor:** MRF-DEV02 (Nicolas Fandiño) · Taller de Automatización con IA
