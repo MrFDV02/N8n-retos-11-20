@@ -1,0 +1,617 @@
+{
+  "name": "RETO 14",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "solicitud-compra",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "53f237f6-1af3-405c-8609-11289f9a2e1d",
+      "name": "Webhook",
+      "webhookId": "51519e45-e989-422d-ad74-5d918949aa24"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7effbdbd-b1e6-445f-9de2-0317ab3ddc52",
+              "leftValue": "={{ $json.body.solicitante }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "bb31cf44-fef1-4074-876c-46841f62c794",
+              "leftValue": "={{ $json.body.correo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "eaab2981-921b-4edd-9a8d-a8d7c9cda85d",
+              "leftValue": "={{ $json.body.centro_costo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "b0458872-25b1-4de0-9df3-3be3fd413940",
+              "leftValue": "={{ $json.body.items }}",
+              "rightValue": "",
+              "operator": {
+                "type": "array",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3999ac06-2ce5-477b-9038-1534b5da8570",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"error\": \"Faltan datos obligatorios: solicitante, correo, centro_costo o items\" }",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        448,
+        96
+      ],
+      "id": "ae90d23a-3c58-4c0e-b3d5-140983699926",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "24fb611b-13e4-4084-bcf7-a342581c2530",
+              "name": "id_solicitud",
+              "value": "={{ 'SOL-' + $now.toFormat('yyyyMMdd-HHmmss') + '-' + Math.floor(Math.random() * 1000) }}",
+              "type": "string"
+            },
+            {
+              "id": "2184dfc0-d765-40d2-b583-e4ce4feeee80",
+              "name": "solicitante",
+              "value": "={{ $json.body.solicitante }}",
+              "type": "string"
+            },
+            {
+              "id": "04f8bbf6-b545-459e-be70-5de7ce38f62c",
+              "name": "correo",
+              "value": "={{ $json.body.correo }}",
+              "type": "string"
+            },
+            {
+              "id": "db1099aa-476b-4c1f-b2a6-c0192db3588c",
+              "name": "centro_costo",
+              "value": "={{ $json.body.centro_costo }}",
+              "type": "string"
+            },
+            {
+              "id": "b868e141-fbe6-43de-9506-8c7347b2f2f4",
+              "name": "justificacion",
+              "value": "={{ $json.body.justificacion }}",
+              "type": "string"
+            },
+            {
+              "id": "50cef2dc-b3c0-4e5f-9f16-69b0447b8541",
+              "name": "estado",
+              "value": "PENDIENTE_APROBACION",
+              "type": "string"
+            },
+            {
+              "id": "f8663668-9ce0-418c-9a9d-d3d19bf43dd6",
+              "name": "items",
+              "value": "={{ $json.body.items }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        464,
+        224
+      ],
+      "id": "49196bb9-598f-453c-8689-658e9d0ca0a9",
+      "name": "Datos generales"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "items",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        688,
+        224
+      ],
+      "id": "1a059066-0867-4ca7-9703-5c39686d8cd9",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "739dc226-6164-46df-8aca-91685ac5091e",
+              "name": "=subtotal",
+              "value": "={{ $json.items.cantidad * $json.items.valor_unitario }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        912,
+        224
+      ],
+      "id": "6236a2cd-cccc-459d-a84a-62d3e0a76f88",
+      "name": "Subtotales"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "items",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        224
+      ],
+      "id": "43ab1cf9-5f99-4bf1-9d75-e7d793ea5eae",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "01b1cc47-091e-499f-b1e3-d2db6826edc7",
+              "name": "id_solicitud",
+              "value": "={{ $json.items[0].id_solicitud }}",
+              "type": "string"
+            },
+            {
+              "id": "528b4bb7-e455-422c-b874-5ed05d315a37",
+              "name": "solicitante",
+              "value": "={{ $json.items[0].solicitante }}",
+              "type": "string"
+            },
+            {
+              "id": "6a5ea64f-17ec-459f-940c-cce94fe10195",
+              "name": "correo",
+              "value": "={{ $json.items[0].correo }}",
+              "type": "string"
+            },
+            {
+              "id": "2efec0cf-de5c-4383-96d4-3a13949d30f0",
+              "name": "centro_costo",
+              "value": "={{ $json.items[0].centro_costo }}",
+              "type": "string"
+            },
+            {
+              "id": "c803f604-940f-4db5-a49c-84e5dd28efdf",
+              "name": "justificacion",
+              "value": "={{ $json.items[0].justificacion }}",
+              "type": "string"
+            },
+            {
+              "id": "72376bcc-100a-4e70-8618-2076ee9a4a0a",
+              "name": "estado",
+              "value": "PENDIENTE_APROBACION",
+              "type": "string"
+            },
+            {
+              "id": "45e6acb8-c3ca-437e-a059-b6462eb251f0",
+              "name": "items",
+              "value": "={{ $json.items.map(i => ({ descripcion: i.items.descripcion, cantidad: i.items.cantidad, valor_unitario: i.items.valor_unitario, subtotal: i.subtotal })) }}",
+              "type": "array"
+            },
+            {
+              "id": "aa93697b-7152-491b-95d0-8438e76713ad",
+              "name": "total",
+              "value": "={{ $json.items.reduce((suma, i) => suma + i.subtotal, 0) }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1360,
+        224
+      ],
+      "id": "eaf2b83c-2bb1-4407-af15-f9ef2fa22395",
+      "name": "Solicitud final."
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw",
+          "mode": "list",
+          "cachedResultName": "Solicitudes de compra",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_solicitud": "={{ $json.id_solicitud }}",
+            "fecha": "={{ $now.toFormat('yyyy-MM-dd HH:mm') }}",
+            "solicitante": "={{ $json.solicitante }}",
+            "correo": "={{ $json.correo }}",
+            "centro_costo": "={{ $json.centro_costo }}",
+            "justificacion": "={{ $json.justificacion }}",
+            "total": "={{ $json.total }}",
+            "estado": "={{ $json.estado }}",
+            "detalle": "={{ JSON.stringify($json.items) }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_solicitud",
+              "displayName": "id_solicitud",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "solicitante",
+              "displayName": "solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "correo",
+              "displayName": "correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "centro_costo",
+              "displayName": "centro_costo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "justificacion",
+              "displayName": "justificacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detalle",
+              "displayName": "detalle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1488,
+        224
+      ],
+      "id": "ccc8e246-6353-4254-b4eb-669221c9f668",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pneOzUi3j5Q3tjgS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "88759a28-def5-4836-a3bb-38a1b350c56e",
+              "name": "items",
+              "value": "={{ $('Solicitud final.').item.json.items }}",
+              "type": "array"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1712,
+        224
+      ],
+      "id": "a9ec21ec-8042-40fd-81fd-f7acc3cdb2aa",
+      "name": "Solicitud para aprobación"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "LxB5Q1QLB3jCECDA",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/LxB5Q1QLB3jCECDA",
+          "cachedResultName": "RETO 15"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        224
+      ],
+      "id": "2af3fa4f-eab4-4332-b019-8fede42a5ac2",
+      "name": "Call 'RETO 15'"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"id_solicitud\": \"{{ $('Solicitud final.').item.json.id_solicitud }}\",\n  \"total\": {{ $('Solicitud final.').item.json.total }},\n  \"estado\": \"{{ $('Solicitud final.').item.json.estado }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2160,
+        224
+      ],
+      "id": "3747a477-f67a-4129-a335-2768616c80bb",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Datos generales",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Datos generales": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Subtotales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Subtotales": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Solicitud final.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solicitud final.": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Solicitud para aprobación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Solicitud para aprobación": {
+      "main": [
+        [
+          {
+            "node": "Call 'RETO 15'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'RETO 15'": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "425bf6f9-1577-4795-93a5-4d76203086a1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fa10c907eb506ffd51d45e4ec51e1a79c1b35114398a835bce6a71ade8570941"
+  },
+  "nodeGroups": [],
+  "id": "qIqfZuwTPrAD2xVG",
+  "tags": []
+}

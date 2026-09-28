@@ -1,0 +1,498 @@
+{
+  "name": "RETO 11",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "has:attachment filename:pdf"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        32,
+        -16
+      ],
+      "id": "8ac48301-920f-492f-82b7-665f2ca71414",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ExVBJTQY9YxthfV7",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7379c6d1-b3d1-4d24-b377-bcefac0ba7f9",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "proveedor",
+              "description": "Razón social del emisor de la factura",
+              "required": true
+            },
+            {
+              "name": "nit",
+              "description": "NIT del emisor, sin dígito de verificación ni puntos",
+              "required": true
+            },
+            {
+              "name": "numero_factura",
+              "description": "\tNúmero o prefijo+número de la factura",
+              "required": true
+            },
+            {
+              "name": "fecha_factura",
+              "description": "Fecha de emisión en formato AAAA-MM-DD",
+              "required": true
+            },
+            {
+              "name": "fecha_vencimiento",
+              "description": "Fecha de vencimiento en formato AAAA-MM-DD. Si el documento no indica una fecha de vencimiento explícita, déjala vacía. No uses la fecha de emisión."
+            },
+            {
+              "name": "subtotal",
+              "type": "number",
+              "description": "Subtotal antes de impuestos",
+              "required": true
+            },
+            {
+              "name": "iva",
+              "type": "number",
+              "description": "Valor del IVA",
+              "required": true
+            },
+            {
+              "name": "total",
+              "type": "number",
+              "description": "Total a pagar",
+              "required": true
+            },
+            {
+              "name": "moneda",
+              "description": "\tCódigo de moneda, ej. COP",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "79b59472-d322-4537-9235-1eab1e39a895",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        384,
+        208
+      ],
+      "id": "39a5301a-9c7a-4953-a464-0c147aba7f14",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "jd9GJ3t8fsnLoHLP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0475466d-d9a1-4b9a-a8eb-5a86785e2b1f",
+              "name": "llave",
+              "value": "={{ $json.output.nit }}-{{ $json.output.numero_factura }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        816,
+        0
+      ],
+      "id": "8432d1e9-cd9f-4d39-b0fb-7739ecf5b844",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.llave }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "7f06d982-a44e-4b93-862c-e4e242c834b5",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1264,
+        0
+      ],
+      "id": "e64e9357-a1a9-499b-b21f-bbd0d59b6761",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "attachment_0",
+        "name": "={{ $json.llave }}.pdf ",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1ugZ0uAvis_0GOwhV8-SnnKH5G1K2GOGJ",
+          "mode": "list",
+          "cachedResultName": "Facturas PDF",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1ugZ0uAvis_0GOwhV8-SnnKH5G1K2GOGJ"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1488,
+        0
+      ],
+      "id": "a591ed45-08ae-406f-9436-195e4d937d44",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "35XFbF6XRmTkI1ed",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1VEbaZTqw6h6Qs8ciUx1CMZ_-Thj0OOC90ghBq3EA4Fo",
+          "mode": "list",
+          "cachedResultName": "Radicación de Facturas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VEbaZTqw6h6Qs8ciUx1CMZ_-Thj0OOC90ghBq3EA4Fo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1VEbaZTqw6h6Qs8ciUx1CMZ_-Thj0OOC90ghBq3EA4Fo/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Proveedor": "={{ $('Merge').item.json.output.proveedor }}",
+            "NIT": "={{ $('Merge').item.json.output.nit }}",
+            "Número Factura": "=\t{{ $('Merge').item.json.output.numero_factura }}",
+            "Fecha Factura": "={{ $('Merge').item.json.output.fecha_factura }}",
+            "Fecha Vencimiento": "={{ $('Merge').item.json.output.fecha_vencimiento }}",
+            "Subtotal": "={{ $('Merge').item.json.output.subtotal }}",
+            "IVA": "={{ $('Merge').item.json.output.iva }}",
+            "Total": "={{ $('Merge').item.json.output.total }}",
+            "Moneda": "={{ $('Merge').item.json.output.moneda }}",
+            "Link Drive": "=\t{{ $json.webViewLink }}",
+            "archivo_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Proveedor",
+              "displayName": "Proveedor",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "NIT",
+              "displayName": "NIT",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Número Factura",
+              "displayName": "Número Factura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha Factura",
+              "displayName": "Fecha Factura",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha Vencimiento",
+              "displayName": "Fecha Vencimiento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Subtotal",
+              "displayName": "Subtotal",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "IVA",
+              "displayName": "IVA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total",
+              "displayName": "Total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Moneda",
+              "displayName": "Moneda",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Link Drive",
+              "displayName": "Link Drive",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "archivo_id",
+              "displayName": "archivo_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1712,
+        0
+      ],
+      "id": "c8566495-3658-41aa-8896-a191a1936857",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pneOzUi3j5Q3tjgS",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ad36b661-5b6b-430f-ad72-6ecdaed423e9",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fa10c907eb506ffd51d45e4ec51e1a79c1b35114398a835bce6a71ade8570941"
+  },
+  "nodeGroups": [],
+  "id": "yl7NNxQFWV4LkArk",
+  "tags": []
+}

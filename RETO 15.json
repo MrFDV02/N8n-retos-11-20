@@ -1,0 +1,923 @@
+{
+  "name": "RETO 15",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cfed8e3a-f8a8-4c8b-a3a6-3b1e7af494d2",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.total }}",
+                    "rightValue": 1000000,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    },
+                    "id": "a24e5b34-603c-4798-845e-d27544348be6"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Automática"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "457dde44-12be-4f2d-8ee5-8ff0a1de9fbf",
+                    "leftValue": "={{ $json.total }}",
+                    "rightValue": 5000000,
+                    "operator": {
+                      "type": "number",
+                      "operation": "lt"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Jefe"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f1151dea-6289-40ba-b790-85fa40f21e6a",
+                    "leftValue": "={{ $json.total }}",
+                    "rightValue": 5000000,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Financiera"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        0
+      ],
+      "id": "b705a339-5a95-45a6-8d83-f54d7925edb9",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "ni.fi28@hotmail.com",
+        "subject": "=Aprobación de solicitud {{ $json.id_solicitud }}",
+        "message": "=Solicitud: {{ $json.id_solicitud }}\nSolicitante: {{ $json.solicitante }}\nCentro de costo: {{ $json.centro_costo }}\nJustificación: {{ $json.justificacion }}\nTotal: {{ $json.total }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Aprobar",
+            "disapproveLabel": "Rechazar"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        -176
+      ],
+      "id": "180b8cbc-6692-4ef3-b406-16a43de7fc09",
+      "name": "Send message and wait for response",
+      "webhookId": "cf2fbde4-7ad5-438b-a1e4-25e5eba43502",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ExVBJTQY9YxthfV7",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "401a3aee-84bc-489b-befe-f13da67c8856",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "06212af2-6fe6-44ca-8ae8-f19b7278b092",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw",
+          "mode": "list",
+          "cachedResultName": "Solicitudes de compra",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_solicitud": "={{ $('When Executed by Another Workflow').item.json.id_solicitud }}",
+            "estado": "APROBADA"
+          },
+          "matchingColumns": [
+            "id_solicitud"
+          ],
+          "schema": [
+            {
+              "id": "id_solicitud",
+              "displayName": "id_solicitud",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "solicitante",
+              "displayName": "solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "correo",
+              "displayName": "correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "centro_costo",
+              "displayName": "centro_costo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "justificacion",
+              "displayName": "justificacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "detalle",
+              "displayName": "detalle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "688ea17c-64ca-4d8a-91d5-e3bd9547a33d",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pneOzUi3j5Q3tjgS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "folderId": "1iMCkscXThCxGKJIz6ys8zMq3YxXfS1XA",
+        "title": "=Orden de compra {{ $('When Executed by Another Workflow').item.json.id_solicitud }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "d4d1d5a1-11ce-4e4b-ac77-c88cc85a1bd8",
+      "name": "Create a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "C39kgXl7mITiUj6P",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ (() => { const d = $('When Executed by Another Workflow').item.json; const nivel = d.total < 1000000 ? 'Automática' : (d.total < 5000000 ? 'Jefe' : 'Financiera'); return ['ORDEN DE COMPRA', '', 'Solicitud: ' + d.id_solicitud, 'Fecha: ' + $now.format('yyyy-MM-dd'), 'Solicitante: ' + d.solicitante, 'Centro de costo: ' + d.centro_costo, 'Justificación: ' + d.justificacion, '', 'Detalle:', ...d.items.map(i => '- ' + i.descripcion + ' | Cant: ' + i.cantidad + ' | Unit: ' + i.valor_unitario + ' | Subtotal: ' + i.subtotal), '', 'Total: ' + d.total, 'Nivel de aprobación: ' + nivel].join('\\n'); })() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        -96
+      ],
+      "id": "f1a81f1b-18fb-43c0-8740-bcb59e51a203",
+      "name": "Update a document",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "C39kgXl7mITiUj6P",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ni.fi28@hotmail.com",
+        "subject": "=Nueva orden de compra {{ $('When Executed by Another Workflow').item.json.id_solicitud }}",
+        "message": "=Se emitió la orden de compra {{ $('When Executed by Another Workflow').item.json.id_solicitud }}. Solicitante: {{ $('When Executed by Another Workflow').item.json.solicitante }} Total: {{ $('When Executed by Another Workflow').item.json.total }} Documento: https://docs.google.com/document/d/{{ $('Create a document').item.json.id }}/edit",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1520,
+        -96
+      ],
+      "id": "4e36e253-e350-4ba2-9292-75870cb70b12",
+      "name": "Send a message",
+      "webhookId": "adf3c9e2-af8b-4d52-8091-d05afc49e683",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ExVBJTQY9YxthfV7",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ni.fi28@hotmail.com",
+        "subject": "=Tu orden de compra fue emitida: {{ $('When Executed by Another Workflow').item.json.id_solicitud }}",
+        "message": "=Hola {{ $('When Executed by Another Workflow').item.json.solicitante }},  Tu solicitud {{ $('When Executed by Another Workflow').item.json.id_solicitud }} fue aprobada y la orden de compra ya fue emitida. Total: {{ $('When Executed by Another Workflow').item.json.total }} Documento: https://docs.google.com/document/d/{{ $('Create a document').item.json.id }}/edit",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1744,
+        -96
+      ],
+      "id": "dc54c30f-9b9c-4c65-b82e-9d8aa06cf9f2",
+      "name": "Send a message1",
+      "webhookId": "00bd4ace-bae3-44ef-8642-f80fdd13c163",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ExVBJTQY9YxthfV7",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw",
+          "mode": "list",
+          "cachedResultName": "Solicitudes de compra",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_solicitud": "={{ $('When Executed by Another Workflow').item.json.id_solicitud }}",
+            "estado": "EMITIDA"
+          },
+          "matchingColumns": [
+            "id_solicitud"
+          ],
+          "schema": [
+            {
+              "id": "id_solicitud",
+              "displayName": "id_solicitud",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "solicitante",
+              "displayName": "solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "correo",
+              "displayName": "correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "centro_costo",
+              "displayName": "centro_costo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "justificacion",
+              "displayName": "justificacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detalle",
+              "displayName": "detalle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1968,
+        -96
+      ],
+      "id": "e6f242b0-dd08-4720-b15f-f016a52d7e4a",
+      "name": "Update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pneOzUi3j5Q3tjgS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw",
+          "mode": "list",
+          "cachedResultName": "Solicitudes de compra",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HqV1edsPDAx9FkviwE7eN_Hr1uXRS_ixrGMpTODDoIw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_solicitud": "={{ $('When Executed by Another Workflow').item.json.id_solicitud }}",
+            "estado": "RECHAZADA"
+          },
+          "matchingColumns": [
+            "id_solicitud"
+          ],
+          "schema": [
+            {
+              "id": "id_solicitud",
+              "displayName": "id_solicitud",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fecha",
+              "displayName": "fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "solicitante",
+              "displayName": "solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "correo",
+              "displayName": "correo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "centro_costo",
+              "displayName": "centro_costo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "justificacion",
+              "displayName": "justificacion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "total",
+              "displayName": "total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "estado",
+              "displayName": "estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "detalle",
+              "displayName": "detalle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        896,
+        96
+      ],
+      "id": "1ee0ff16-c4c2-401e-863e-31e89eb748f8",
+      "name": "Update row in sheet2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pneOzUi3j5Q3tjgS",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "ni.fi28@hotmail.com",
+        "subject": "=Solicitud rechazada: {{ $('When Executed by Another Workflow').item.json.id_solicitud }}",
+        "message": "=Hola {{ $('When Executed by Another Workflow').item.json.solicitante }},  Tu solicitud {{ $('When Executed by Another Workflow').item.json.id_solicitud }} por un total de {{ $('When Executed by Another Workflow').item.json.total }} fue rechazada. Si tienes dudas, comunícate con tu jefe o con el área de compras.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        96
+      ],
+      "id": "56caabd3-a6a7-4fae-87c2-7adb853b8757",
+      "name": "Send a message2",
+      "webhookId": "2308aa7a-23cc-4e05-8d7f-0743f8e3152a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ExVBJTQY9YxthfV7",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "ni.fi28@hotmail.com",
+        "subject": "=(Financiera) Aprobación de solicitud {{ $('When Executed by Another Workflow').item.json.id_solicitud }}",
+        "message": "=Solicitud: {{ $json.id_solicitud }}\nSolicitante: {{ $json.solicitante }}\nCentro de costo: {{ $json.centro_costo }}\nJustificación: {{ $json.justificacion }}\nTotal: {{ $json.total }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Aprobar",
+            "disapproveLabel": "Rechazar"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        496,
+        144
+      ],
+      "id": "c0d2ed52-ba40-4ad6-94b6-d39aa29ec4da",
+      "name": "Send message and wait for response1",
+      "webhookId": "cf2fbde4-7ad5-438b-a1e4-25e5eba43502",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "ExVBJTQY9YxthfV7",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message and wait for response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update row in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Create a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a document": {
+      "main": [
+        [
+          {
+            "node": "Update a document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a document": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet2": {
+      "main": [
+        [
+          {
+            "node": "Send a message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "acd05611-76fb-4905-ae15-9cd830694001",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fa10c907eb506ffd51d45e4ec51e1a79c1b35114398a835bce6a71ade8570941"
+  },
+  "nodeGroups": [],
+  "id": "LxB5Q1QLB3jCECDA",
+  "tags": []
+}
